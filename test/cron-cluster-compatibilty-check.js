@@ -363,3 +363,31 @@ test('Should not fail when a job is stopped and restarted', function (t) {
     })
   })
 })
+
+test('Should run job with CronJob base options', function (t) {
+  t.plan(1)
+
+  var client = redis.createClient()
+
+  removeLeaderKeys(client, function (err) {
+    if (err) throw err
+
+    client.unref()
+
+    var CronJob = CronCluster(client).CronJob
+
+    var arrRes = []
+
+    var job1 = new CronJob({
+      cronTime: '* * * * * *',
+      onTick: function () {
+        arrRes.push('job1')
+      },
+      runOnInit: true
+    })
+    job1.start()
+    wait(1300, function () {
+      t.equal(arrRes.length, 2, 'Array must have 2 elements')
+    })
+  })
+})
